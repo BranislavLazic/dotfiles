@@ -15,7 +15,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(ido-completing-read+ projectile magit doom-modeline company company-go go-mode evil material-theme)))
+   '(badwolf-theme which-key helm projectile magit diff-hl doom-modeline company company-go go-mode evil)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -26,19 +26,29 @@
 (setq inhibit-startup-screen t)
 (tool-bar-mode 0)
 (menu-bar-mode 0)
-(set-frame-font "Monaco 15")
+(set-frame-font "Monaco 14")
 (column-number-mode 1)
 (global-display-line-numbers-mode 1)
 (show-paren-mode 1)
-(load-theme 'material t)
+(load-theme 'badwolf t)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq default-directory "~/")
 
 ;; Hooks
 (add-hook 'after-init-hook 'global-company-mode)
 (add-hook 'go-mode-hook (lambda ()
-                          (set (make-local-variable 'company-backends) '(company-go))
-                          (company-mode)))
+                        (set (make-local-variable 'company-backends) '(company-go))
+                        (company-mode)))
+(add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+
+;; Windows and buffers
+(global-set-key (kbd "C-c w v") 'split-window-horizontally)
+(global-set-key (kbd "C-c w s") 'split-window-vertically)
+(global-set-key (kbd "C-c w q") 'kill-buffer-and-window)
+(global-set-key (kbd "C-c b n") 'switch-to-next-buffer)
+(global-set-key (kbd "C-c b p") 'switch-to-prev-buffer)
+
+
 ;; Evil
 (require 'evil)
 (evil-mode 1)
@@ -61,11 +71,24 @@
 
 ;; Ido
 (require 'ido)
-(require 'ido-completing-read+)
 (ido-mode 1)
-(ido-everywhere 1)
 
 ;; Magit
 (require 'magit)
-(define-key magit-mode-map (kbd "C-c g s") 'magit-status)
-(define-key magit-mode-map (kbd "C-c g l") 'magit-log)
+(global-set-key (kbd "C-c g s") 'magit-status)
+(global-set-key (kbd "C-c g l") 'magit-log)
+(global-set-key (kbd "C-c g r") 'magit-revert)
+
+;; Diff hl
+(require 'diff-hl)
+(global-diff-hl-mode)
+
+;; Helm
+(require 'helm)
+(helm-mode 1)
+(global-set-key (kbd "C-c h f") 'helm-find)
+(global-set-key (kbd "C-c h r") 'helm-recentf)
+
+;; Which key
+(require 'which-key)
+(which-key-mode)
