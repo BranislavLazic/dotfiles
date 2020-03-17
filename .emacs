@@ -15,7 +15,8 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(badwolf-theme which-key helm projectile magit diff-hl doom-modeline company company-go go-mode evil)))
+   (quote
+    (helm-projectile helm-swoop badwolf-theme which-key helm projectile magit diff-hl doom-modeline company company-go go-mode evil))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -30,7 +31,6 @@
 (column-number-mode 1)
 (global-display-line-numbers-mode 1)
 (show-paren-mode 1)
-(load-theme 'badwolf t)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 (setq default-directory "~/")
 
@@ -43,6 +43,7 @@
 
 ;; Windows and buffers
 (global-set-key (kbd "C-c w v") 'split-window-horizontally)
+(global-set-key (kbd "C-c w w") 'other-window)
 (global-set-key (kbd "C-c w s") 'split-window-vertically)
 (global-set-key (kbd "C-c w q") 'kill-buffer-and-window)
 (global-set-key (kbd "C-c b n") 'switch-to-next-buffer)
@@ -88,6 +89,14 @@
 (helm-mode 1)
 (global-set-key (kbd "C-c h f") 'helm-find)
 (global-set-key (kbd "C-c h r") 'helm-recentf)
+
+;; Helm swoop
+(require 'helm-swoop)
+(global-set-key (kbd "C-s") 'helm-swoop)
+
+;; Helm projectile
+(require 'helm-projectile)
+(helm-projectile-on)
 
 ;; Which key
 (require 'which-key)
