@@ -1,9 +1,7 @@
 (require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/") t)
 (package-initialize)
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-             ("marmalade" . "http://marmalade-repo.org/packages/")
-             ("melpa" . "http://melpa.milkbox.net/packages/")))
-
 ;; Install packages if they don't exist
 (unless package-archive-contents
   (package-refresh-contents))
@@ -15,8 +13,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   (quote
-    (helm-projectile helm-swoop badwolf-theme which-key helm projectile magit diff-hl doom-modeline company company-go go-mode evil))))
+   '(flycheck lsp-ui lsp-haskell hlint-refactor format-all company-ghci helm-projectile doom-themes helm-swoop which-key helm projectile magit diff-hl doom-modeline company company-go go-mode evil company-ghci haskell-mode)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -27,12 +24,15 @@
 (setq inhibit-startup-screen t)
 (tool-bar-mode 0)
 (menu-bar-mode 0)
-(set-frame-font "Monaco 14")
+(set-frame-font "Monaco 13")
 (column-number-mode 1)
 (global-display-line-numbers-mode 1)
 (show-paren-mode 1)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
+(load-theme 'doom-one t)
 (setq default-directory "~/")
+(setq scroll-conservatively 10)
+(setq scroll-margin 7)
 
 ;; Hooks
 (add-hook 'after-init-hook 'global-company-mode)
@@ -41,14 +41,28 @@
                         (company-mode)))
 (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
 
-;; Windows and buffers
-(global-set-key (kbd "C-c w v") 'split-window-horizontally)
-(global-set-key (kbd "C-c w w") 'other-window)
-(global-set-key (kbd "C-c w s") 'split-window-vertically)
-(global-set-key (kbd "C-c w q") 'kill-buffer-and-window)
-(global-set-key (kbd "C-c b n") 'switch-to-next-buffer)
-(global-set-key (kbd "C-c b p") 'switch-to-prev-buffer)
-
+(with-eval-after-load 'evil-maps
+  ;; Files
+  (define-key evil-normal-state-map (kbd "<SPC> f f") 'find-file)
+  (define-key evil-normal-state-map (kbd "<SPC> f s") 'save-buffer)
+  ;; Helm swoop
+  (define-key evil-normal-state-map (kbd "<SPC> s") 'helm-swoop)
+  ;; Windows and buffers
+  (define-key evil-normal-state-map (kbd "<SPC> w v") 'split-window-horizontally)
+  (define-key evil-normal-state-map (kbd "<SPC> w w") 'other-window)
+  (define-key evil-normal-state-map (kbd "<SPC> w s") 'split-window-vertically)
+  (define-key evil-normal-state-map (kbd "<SPC> w q") 'kill-buffer-and-window)
+  (define-key evil-normal-state-map (kbd "<SPC> b n") 'switch-to-next-buffer)
+  (define-key evil-normal-state-map (kbd "<SPC> b p") 'switch-to-prev-buffer)
+  (define-key evil-normal-state-map (kbd "<SPC> p") 'projectile-command-map)
+  ;; Magit
+  (define-key evil-normal-state-map (kbd "<SPC> g s") 'magit-status)
+  (define-key evil-normal-state-map (kbd "<SPC> g l") 'magit-log)
+  (define-key evil-normal-state-map (kbd "<SPC> g r") 'magit-revert)
+  ;; Helm
+  (define-key evil-normal-state-map (kbd "<SPC> h f") 'helm-find)
+  (define-key evil-normal-state-map (kbd "<SPC> h r") 'helm-recentf)
+  )
 
 ;; Evil
 (require 'evil)
@@ -68,7 +82,6 @@
 ;; Projectile
 (require 'projectile)
 (projectile-mode +1)
-(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
 
 ;; Ido
 (require 'ido)
@@ -76,9 +89,6 @@
 
 ;; Magit
 (require 'magit)
-(global-set-key (kbd "C-c g s") 'magit-status)
-(global-set-key (kbd "C-c g l") 'magit-log)
-(global-set-key (kbd "C-c g r") 'magit-revert)
 
 ;; Diff hl
 (require 'diff-hl)
@@ -87,12 +97,9 @@
 ;; Helm
 (require 'helm)
 (helm-mode 1)
-(global-set-key (kbd "C-c h f") 'helm-find)
-(global-set-key (kbd "C-c h r") 'helm-recentf)
 
 ;; Helm swoop
 (require 'helm-swoop)
-(global-set-key (kbd "C-s") 'helm-swoop)
 
 ;; Helm projectile
 (require 'helm-projectile)
@@ -101,3 +108,10 @@
 ;; Which key
 (require 'which-key)
 (which-key-mode)
+
+;; Haskell
+(require 'haskell-mode)
+(require 'lsp)
+(require 'lsp-haskell)
+(setq lsp-haskell-process-path-hie "hie-wrapper")
+(add-hook 'haskell-mode-hook 'lsp)
