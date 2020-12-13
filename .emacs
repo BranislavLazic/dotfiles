@@ -1,26 +1,16 @@
 (require 'package)
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("elpa" . "https://elpa.gnu.org/packages/") t)
-(package-initialize)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("elpa" . "http://elpa.gnu.org/packages/")))
+
 ;; Install packages if they don't exist
-(unless package-archive-contents
-  (package-refresh-contents))
-(package-install-selected-packages)
+(package-initialize)
+(unless package-archive-contents (package-refresh-contents))
+(unless (package-installed-p 'use-package)
+       (package-install 'use-package))
+(require 'use-package)
+(setq use-package-always-ensure t)
 
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(flycheck lsp-ui lsp-haskell hlint-refactor format-all company-ghci helm-projectile doom-themes helm-swoop which-key helm projectile magit diff-hl doom-modeline company company-go go-mode evil company-ghci haskell-mode)))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-
+;; Basic UI config
 (setq inhibit-startup-screen t)
 (tool-bar-mode 0)
 (menu-bar-mode 0)
@@ -29,16 +19,12 @@
 (global-display-line-numbers-mode 1)
 (show-paren-mode 1)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-(load-theme 'doom-one t)
+
 (setq default-directory "~/")
 (setq scroll-conservatively 10)
 (setq scroll-margin 7)
 
 ;; Hooks
-(add-hook 'after-init-hook 'global-company-mode)
-(add-hook 'go-mode-hook (lambda ()
-                        (set (make-local-variable 'company-backends) '(company-go))
-                        (company-mode)))
 (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
 
 (with-eval-after-load 'evil-maps
@@ -64,54 +50,68 @@
   (define-key evil-normal-state-map (kbd "<SPC> h r") 'helm-recentf)
   )
 
+;; Set Doom theme
+(use-package doom-themes)
+(load-theme 'doom-one t)
+
 ;; Evil
-(require 'evil)
+(use-package evil)
 (evil-mode 1)
 
-;; Company
-(require 'company)
-(require 'company-go)
-(setq company-minimum-prefix-length 1)
-(setq company-idle-delay .1)
-(setq company-echo-delay 0)
-
 ;; Doom modeline
-(require 'doom-modeline)
+(use-package doom-modeline)
 (doom-modeline-mode 1)
 
 ;; Projectile
-(require 'projectile)
+(use-package projectile)
 (projectile-mode +1)
 
 ;; Ido
-(require 'ido)
+(use-package ido)
 (ido-mode 1)
 
 ;; Magit
-(require 'magit)
+(use-package magit)
 
 ;; Diff hl
-(require 'diff-hl)
+(use-package diff-hl)
 (global-diff-hl-mode)
 
 ;; Helm
-(require 'helm)
+(use-package helm)
 (helm-mode 1)
 
 ;; Helm swoop
-(require 'helm-swoop)
+(use-package helm-swoop)
 
 ;; Helm projectile
-(require 'helm-projectile)
+(use-package helm-projectile)
 (helm-projectile-on)
 
 ;; Which key
-(require 'which-key)
+(use-package which-key)
 (which-key-mode)
+(setq which-key-idle-delay 0.1)
 
-;; Haskell
-(require 'haskell-mode)
-(require 'lsp)
-(require 'lsp-haskell)
-(setq lsp-haskell-process-path-hie "hie-wrapper")
-(add-hook 'haskell-mode-hook 'lsp)
+;; Rainbow delimiters
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+;; Flycheck
+(use-package flycheck)
+(global-flycheck-mode)
+
+(use-package go-mode)
+
+;; LSP
+(use-package lsp-mode)
+
+(use-package lsp-ui
+  :commands lsp-ui-mode)
+
+(use-package company)
+(setq company-minimum-prefix-length 1)
+(setq company-idle-delay .1)
+(setq company-echo-delay 0)
+(add-hook 'after-init-hook 'global-company-mode)
+
