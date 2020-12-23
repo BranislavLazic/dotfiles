@@ -29,7 +29,7 @@
 
 (with-eval-after-load 'evil-maps
   ;; Files
-  (define-key evil-normal-state-map (kbd "<SPC> f f") 'find-file)
+  (define-key evil-normal-state-map (kbd "<SPC> f o") 'find-file)
   (define-key evil-normal-state-map (kbd "<SPC> f s") 'save-buffer)
   ;; Helm swoop
   (define-key evil-normal-state-map (kbd "<SPC> s") 'helm-swoop)
@@ -40,7 +40,13 @@
   (define-key evil-normal-state-map (kbd "<SPC> w q") 'kill-buffer-and-window)
   (define-key evil-normal-state-map (kbd "<SPC> b n") 'switch-to-next-buffer)
   (define-key evil-normal-state-map (kbd "<SPC> b p") 'switch-to-prev-buffer)
+  ;; LSP
+  (define-key evil-normal-state-map (kbd "<SPC> l r") 'lsp-rename)
+  (define-key evil-normal-state-map (kbd "<SPC> l d") 'lsp-find-definition)
+  ;; Projectile
   (define-key evil-normal-state-map (kbd "<SPC> p") 'projectile-command-map)
+  ;; Dired
+  (define-key evil-normal-state-map (kbd "<SPC> d o") 'dired)
   ;; Magit
   (define-key evil-normal-state-map (kbd "<SPC> g s") 'magit-status)
   (define-key evil-normal-state-map (kbd "<SPC> g l") 'magit-log)
@@ -48,7 +54,14 @@
   ;; Helm
   (define-key evil-normal-state-map (kbd "<SPC> h f") 'helm-find)
   (define-key evil-normal-state-map (kbd "<SPC> h r") 'helm-recentf)
+  (define-key evil-normal-state-map (kbd "<SPC> :") 'execute-extended-command)
+  ;; Evil nerd commenter
+  (define-key evil-normal-state-map (kbd "g c c") 'evilnc-comment-or-uncomment-lines)
   )
+
+;; Ensure that Emacs picks env vars
+(use-package exec-path-from-shell)
+(exec-path-from-shell-initialize)
 
 ;; Set Doom theme
 (use-package doom-themes)
@@ -65,6 +78,7 @@
 ;; Projectile
 (use-package projectile)
 (projectile-mode +1)
+(setq projectile-project-search-path '("~/code/"))
 
 ;; Ido
 (use-package ido)
@@ -101,17 +115,49 @@
 (use-package flycheck)
 (global-flycheck-mode)
 
+;; Go
 (use-package go-mode)
 
+;; Haskell
+(use-package haskell-mode)
+;; (use-package flycheck-haskell)
+;; (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup)
+(use-package lsp-haskell)
+(add-hook 'haskell-mode-hook #'lsp)
+(add-hook 'haskell-literate-mode-hook #'lsp)
+
 ;; LSP
-(use-package lsp-mode)
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :hook (go-mode . lsp-deferred))
 
-(use-package lsp-ui
-  :commands lsp-ui-mode)
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
-(use-package company)
+;; Company
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode))
 (setq company-minimum-prefix-length 1)
 (setq company-idle-delay .1)
 (setq company-echo-delay 0)
 (add-hook 'after-init-hook 'global-company-mode)
 
+;; LSP UI
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode))
+(setq lsp-ui-doc-enable nil)
+
+(use-package evil-nerd-commenter)
+
+(use-package smartparens)
+(smartparens-global-mode t)
+
+(use-package evil-goggles
+  :ensure t
+  :config
+  (evil-goggles-mode)
+  (evil-goggles-use-diff-faces))
