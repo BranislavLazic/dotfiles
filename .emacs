@@ -42,7 +42,8 @@
   (define-key evil-normal-state-map (kbd "<SPC> b p") 'switch-to-prev-buffer)
   ;; LSP
   (define-key evil-normal-state-map (kbd "<SPC> l r") 'lsp-rename)
-  (define-key evil-normal-state-map (kbd "<SPC> l d") 'lsp-find-definition)
+  (define-key evil-normal-state-map (kbd "<SPC> l j") 'lsp-find-definition)
+  (define-key evil-normal-state-map (kbd "<SPC> l d") 'lsp-find-declaration)
   ;; Projectile
   (define-key evil-normal-state-map (kbd "<SPC> p") 'projectile-command-map)
   ;; Dired
@@ -57,6 +58,8 @@
   (define-key evil-normal-state-map (kbd "<SPC> :") 'execute-extended-command)
   ;; Evil nerd commenter
   (define-key evil-normal-state-map (kbd "g c c") 'evilnc-comment-or-uncomment-lines)
+  ;; Clojure
+  (define-key evil-normal-state-map (kbd "<SPC> c r") 'cider-ns-refresh)
   )
 
 ;; Ensure that Emacs picks env vars
@@ -117,6 +120,10 @@
 
 ;; Go
 (use-package go-mode)
+(defun lsp-go-install-save-hooks ()
+  (add-hook 'before-save-hook #'lsp-format-buffer t t)
+  (add-hook 'before-save-hook #'lsp-organize-imports t t))
+(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
 ;; Haskell
 (use-package haskell-mode)
@@ -126,16 +133,18 @@
 (add-hook 'haskell-mode-hook #'lsp)
 (add-hook 'haskell-literate-mode-hook #'lsp)
 
+;; Clojure
+(use-package cider)
+(use-package clojure-mode)
+(use-package paredit)
+(add-hook 'cider-repl-mode-hook #'company-mode)
+(add-hook 'cider-mode-hook #'company-mode)
+
 ;; LSP
 (use-package lsp-mode
   :ensure t
   :commands (lsp lsp-deferred)
   :hook (go-mode . lsp-deferred))
-
-(defun lsp-go-install-save-hooks ()
-  (add-hook 'before-save-hook #'lsp-format-buffer t t)
-  (add-hook 'before-save-hook #'lsp-organize-imports t t))
-(add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
 ;; Company
 (use-package company
