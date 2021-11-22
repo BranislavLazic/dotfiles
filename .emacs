@@ -19,10 +19,11 @@
 (global-display-line-numbers-mode 1)
 (show-paren-mode 1)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
+ 
 (setq default-directory "~/")
 (setq scroll-conservatively 10)
 (setq scroll-margin 7)
+(setq-default tab-width 4)
 
 ;; Hooks
 (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
@@ -38,6 +39,10 @@
   (define-key evil-normal-state-map (kbd "<SPC> w w") 'other-window)
   (define-key evil-normal-state-map (kbd "<SPC> w s") 'split-window-vertically)
   (define-key evil-normal-state-map (kbd "<SPC> w q") 'kill-buffer-and-window)
+  (define-key evil-normal-state-map (kbd "<SPC> w l") 'windmove-right)
+  (define-key evil-normal-state-map (kbd "<SPC> w h") 'windmove-left)
+  (define-key evil-normal-state-map (kbd "<SPC> w k") 'windmove-up)
+  (define-key evil-normal-state-map (kbd "<SPC> w j") 'windmove-down)
   (define-key evil-normal-state-map (kbd "<SPC> b n") 'switch-to-next-buffer)
   (define-key evil-normal-state-map (kbd "<SPC> b p") 'switch-to-prev-buffer)
   ;; LSP
@@ -60,6 +65,11 @@
   (define-key evil-normal-state-map (kbd "g c c") 'evilnc-comment-or-uncomment-lines)
   ;; Clojure
   (define-key evil-normal-state-map (kbd "<SPC> c r") 'cider-ns-refresh)
+  ;; Go test
+  (define-key evil-normal-state-map (kbd "<SPC> t p") 'go-test-current-project)
+  (define-key evil-normal-state-map (kbd "<SPC> t f") 'go-test-current-file)
+  (define-key evil-normal-state-map (kbd "<SPC> t t") 'go-test-current-test)
+  (define-key evil-normal-state-map (kbd "<SPC> t r") 'go-run)
   )
 
 ;; Ensure that Emacs picks env vars
@@ -94,10 +104,6 @@
 (use-package diff-hl)
 (global-diff-hl-mode)
 
-;; Helm
-(use-package helm)
-(helm-mode 1)
-
 ;; Helm swoop
 (use-package helm-swoop)
 
@@ -127,11 +133,15 @@
 
 ;; Haskell
 (use-package haskell-mode)
-;; (use-package flycheck-haskell)
-;; (add-hook 'flycheck-mode-hook #'flycheck-haskell-setup)
 (use-package lsp-haskell)
 (add-hook 'haskell-mode-hook #'lsp)
 (add-hook 'haskell-literate-mode-hook #'lsp)
+
+(use-package hindent)
+(add-hook 'haskell-mode-hook
+		  (function (lambda ()
+					  (add-hook 'before-save-hook
+								'hindent-reformat-buffer))))
 
 ;; Clojure
 (use-package cider)
@@ -160,6 +170,10 @@
   :hook (lsp-mode . lsp-ui-mode))
 (setq lsp-ui-doc-enable nil)
 
+;; Gotest
+(use-package gotest)
+
+;; Other
 (use-package evil-nerd-commenter)
 
 (use-package smartparens)
