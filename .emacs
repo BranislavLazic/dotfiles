@@ -57,6 +57,9 @@
   (define-key evil-normal-state-map (kbd "<SPC> g s") 'magit-status)
   (define-key evil-normal-state-map (kbd "<SPC> g l") 'magit-log)
   (define-key evil-normal-state-map (kbd "<SPC> g r") 'magit-revert)
+  (define-key evil-normal-state-map (kbd "<SPC> g c") 'magit-commit)
+  (define-key evil-normal-state-map (kbd "<SPC> g f") 'with-editor-finish)
+  (define-key evil-normal-state-map (kbd "<SPC> g q") 'with-editor-cancel)
   ;; Helm
   (define-key evil-normal-state-map (kbd "<SPC> h f") 'helm-find)
   (define-key evil-normal-state-map (kbd "<SPC> h r") 'helm-recentf)
@@ -65,11 +68,6 @@
   (define-key evil-normal-state-map (kbd "g c c") 'evilnc-comment-or-uncomment-lines)
   ;; Clojure
   (define-key evil-normal-state-map (kbd "<SPC> c r") 'cider-ns-refresh)
-  ;; Go test
-  (define-key evil-normal-state-map (kbd "<SPC> t p") 'go-test-current-project)
-  (define-key evil-normal-state-map (kbd "<SPC> t f") 'go-test-current-file)
-  (define-key evil-normal-state-map (kbd "<SPC> t t") 'go-test-current-test)
-  (define-key evil-normal-state-map (kbd "<SPC> t r") 'go-run)
   )
 
 ;; Ensure that Emacs picks env vars
@@ -130,6 +128,13 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
+;; Go test
+(add-hook 'go-mode-hook
+		  (function (lambda ()
+					  (define-key evil-normal-state-map (kbd "<SPC> t p") 'go-test-current-project)
+					  (define-key evil-normal-state-map (kbd "<SPC> t f") 'go-test-current-file)
+					  (define-key evil-normal-state-map (kbd "<SPC> t t") 'go-test-current-test)
+					  (define-key evil-normal-state-map (kbd "<SPC> t r") 'go-run))))
 
 ;; Haskell
 (use-package haskell-mode)
@@ -139,22 +144,29 @@
 
 (use-package hindent)
 (add-hook 'haskell-mode-hook
-		  (function (lambda ()
-					  (add-hook 'before-save-hook
-								'hindent-reformat-buffer))))
+  (function (lambda ()
+	(add-hook 'before-save-hook
+			  'hindent-reformat-buffer))))
 
 ;; Clojure
-(use-package cider)
-(use-package clojure-mode)
-(use-package paredit)
-(add-hook 'cider-repl-mode-hook #'company-mode)
-(add-hook 'cider-mode-hook #'company-mode)
+;; (use-package cider)
+;; (use-package clojure-mode)
+;; (use-package paredit)
+;; (add-hook 'cider-repl-mode-hook #'company-mode)
+;; (add-hook 'cider-mode-hook #'company-mode)
+
+(use-package scala-mode
+  :interpreter
+    ("scala" . scala-mode))
+
+(use-package lsp-metals)
 
 ;; LSP
 (use-package lsp-mode
   :ensure t
   :commands (lsp lsp-deferred)
-  :hook (go-mode . lsp-deferred))
+  :hook (go-mode . lsp-deferred)
+        (scala-mode . lsp-deferred))
 
 ;; Company
 (use-package company
@@ -179,8 +191,16 @@
 (use-package smartparens)
 (smartparens-global-mode t)
 
+;; Goggles
 (use-package evil-goggles
   :ensure t
   :config
   (evil-goggles-mode)
   (evil-goggles-use-diff-faces))
+
+;; Redo/Undo
+(use-package undo-fu)
+(use-package evil
+  :init
+  (setq evil-undo-system 'undo-fu)
+  (setq evil-redo-function 'undo-fu-only-redo))
