@@ -204,3 +204,9 @@
   :init
   (setq evil-undo-system 'undo-fu)
   (setq evil-redo-function 'undo-fu-only-redo))
+
+(use-package zoom)
+(custom-set-variables
+ '(zoom-mode t))
+(custom-set-variables
+ '(zoom-size '(0.618 . 0.618)))
