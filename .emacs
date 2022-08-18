@@ -60,6 +60,7 @@
   (define-key evil-normal-state-map (kbd "<SPC> g c") 'magit-commit)
   (define-key evil-normal-state-map (kbd "<SPC> g f") 'with-editor-finish)
   (define-key evil-normal-state-map (kbd "<SPC> g q") 'with-editor-cancel)
+  (define-key evil-normal-state-map (kbd "<SPC> g p") 'magit-push)
   ;; Helm
   (define-key evil-normal-state-map (kbd "<SPC> h f") 'helm-find)
   (define-key evil-normal-state-map (kbd "<SPC> h r") 'helm-recentf)
@@ -128,7 +129,9 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
-;; Go test
+
+;; Gotest
+(use-package gotest)
 (add-hook 'go-mode-hook
 		  (function (lambda ()
 					  (define-key evil-normal-state-map (kbd "<SPC> t p") 'go-test-current-project)
@@ -182,8 +185,16 @@
   :hook (lsp-mode . lsp-ui-mode))
 (setq lsp-ui-doc-enable nil)
 
-;; Gotest
-(use-package gotest)
+
+;; Debugging
+(use-package dap-mode)
+(dap-mode 1)
+(dap-ui-mode 1)
+(dap-tooltip-mode 1)
+(tooltip-mode 1)
+(dap-ui-controls-mode 1)
+
+(require 'dap-dlv-go)
 
 ;; Other
 (use-package evil-nerd-commenter)
@@ -206,7 +217,43 @@
   (setq evil-redo-function 'undo-fu-only-redo))
 
 (use-package zoom)
+
+;; (use-package web-mode
+;;   :custom
+;;   (web-mode-markup-indent-offset 2)
+;;   (web-mode-css-indent-offset 2)
+;;   (web-mode-code-indent-offset 2))
+
+;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
+;; (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+
+;; (use-package add-node-modules-path)
+;; (defun web-mode-init-prettier-hook ()
+;;   (add-node-modules-path))
+
+;; (add-hook 'web-mode-hook 'web-mode-init-prettier-hook)
+;; (add-hook 'web-mode-hook #'lsp)
+
+
 (custom-set-variables
- '(zoom-mode t))
-(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   '(helm-rg helm-ag prettier-js-mode add-node-modules-path web-mode zoom undo-fu evil-goggles smartparens evil-nerd-commenter gotest lsp-ui company lsp-metals scala-mode hindent lsp-haskell haskell-mode go-mode flycheck rainbow-delimiters which-key helm-projectile helm-swoop diff-hl magit projectile doom-modeline evil doom-themes exec-path-from-shell use-package))
+ '(zoom-mode t nil (zoom))
  '(zoom-size '(0.618 . 0.618)))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(evil-goggles-change-face ((t (:inherit diff-removed))))
+ '(evil-goggles-delete-face ((t (:inherit diff-removed))))
+ '(evil-goggles-paste-face ((t (:inherit diff-added))))
+ '(evil-goggles-undo-redo-add-face ((t (:inherit diff-added))))
+ '(evil-goggles-undo-redo-change-face ((t (:inherit diff-changed))))
+ '(evil-goggles-undo-redo-remove-face ((t (:inherit diff-removed))))
+ '(evil-goggles-yank-face ((t (:inherit diff-changed)))))
