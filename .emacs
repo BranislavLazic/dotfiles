@@ -19,7 +19,8 @@
 (global-display-line-numbers-mode 1)
 (show-paren-mode 1)
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
- 
+(global-hl-line-mode)
+
 (setq default-directory "~/")
 (setq scroll-conservatively 10)
 (setq scroll-margin 7)
@@ -32,6 +33,11 @@
   ;; Files
   (define-key evil-normal-state-map (kbd "<SPC> f o") 'find-file)
   (define-key evil-normal-state-map (kbd "<SPC> f s") 'save-buffer)
+  (define-key evil-normal-state-map (kbd "<SPC> f r") 'helm-recentf)
+  ;; Buffer
+  (define-key evil-normal-state-map (kbd "<SPC> b q") 'kill-buffer)
+  (define-key evil-normal-state-map (kbd "<SPC> b e") 'eval-buffer)
+  (define-key evil-normal-state-map (kbd "<SPC> r") 'query-replace)
   ;; Helm swoop
   (define-key evil-normal-state-map (kbd "<SPC> s") 'helm-swoop)
   ;; Windows and buffers
@@ -52,7 +58,7 @@
   ;; Projectile
   (define-key evil-normal-state-map (kbd "<SPC> p") 'projectile-command-map)
   ;; Dired
-  (define-key evil-normal-state-map (kbd "<SPC> d o") 'dired)
+  (define-key evil-normal-state-map (kbd "<SPC> d") 'dired)
   ;; Magit
   (define-key evil-normal-state-map (kbd "<SPC> g s") 'magit-status)
   (define-key evil-normal-state-map (kbd "<SPC> g l") 'magit-log)
@@ -61,70 +67,96 @@
   (define-key evil-normal-state-map (kbd "<SPC> g f") 'with-editor-finish)
   (define-key evil-normal-state-map (kbd "<SPC> g q") 'with-editor-cancel)
   (define-key evil-normal-state-map (kbd "<SPC> g p") 'magit-push)
-  ;; Helm
-  (define-key evil-normal-state-map (kbd "<SPC> h f") 'helm-find)
-  (define-key evil-normal-state-map (kbd "<SPC> h r") 'helm-recentf)
+  (define-key evil-normal-state-map (kbd "<SPC> g P") 'magit-pull)
+
   (define-key evil-normal-state-map (kbd "<SPC> :") 'execute-extended-command)
   ;; Evil nerd commenter
   (define-key evil-normal-state-map (kbd "g c c") 'evilnc-comment-or-uncomment-lines)
   ;; Clojure
   (define-key evil-normal-state-map (kbd "<SPC> c r") 'cider-ns-refresh)
-  )
+  ;; Debugging
+  (define-key evil-normal-state-map (kbd "<SPC> D a") 'dap-breakpoint-add)
+  (define-key evil-normal-state-map (kbd "<SPC> D r") 'dap-breakpoint-delete)
+ )
 
 ;; Ensure that Emacs picks env vars
-(use-package exec-path-from-shell)
-(exec-path-from-shell-initialize)
+(use-package exec-path-from-shell
+  :ensure t
+  :init
+  (exec-path-from-shell-initialize))
 
 ;; Set Doom theme
-(use-package doom-themes)
+(use-package doom-themes
+  :ensure t)
 (load-theme 'doom-one t)
 
 ;; Evil
-(use-package evil)
-(evil-mode 1)
+(use-package evil
+  :ensure t
+  :init
+  (evil-mode 1))
 
 ;; Doom modeline
-(use-package doom-modeline)
-(doom-modeline-mode 1)
+(use-package doom-modeline
+  :ensure t
+  :init
+  (doom-modeline-mode 1))
 
 ;; Projectile
-(use-package projectile)
-(projectile-mode +1)
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode 1))
 (setq projectile-project-search-path '("~/code/"))
 
+;; Helm projectile
+(use-package helm-projectile
+  :ensure t
+  :init
+  (helm-projectile-on))
+
 ;; Ido
-(use-package ido)
-(ido-mode 1)
+(use-package ido-vertical-mode
+  :ensure t
+  :init
+  (ido-mode 1)
+  (ido-vertical-mode 1))
 
 ;; Magit
-(use-package magit)
+(use-package magit
+  :ensure t)
 
 ;; Diff hl
-(use-package diff-hl)
-(global-diff-hl-mode)
+(use-package diff-hl
+  :ensure t
+  :init
+  (global-diff-hl-mode))
 
 ;; Helm swoop
-(use-package helm-swoop)
-
-;; Helm projectile
-(use-package helm-projectile)
-(helm-projectile-on)
+(use-package helm-swoop
+  :ensure t)
 
 ;; Which key
-(use-package which-key)
-(which-key-mode)
-(setq which-key-idle-delay 0.1)
+(use-package which-key
+  :ensure t
+  :init
+  (which-key-mode)
+  (setq which-key-idle-delay 0.1)
+)
 
 ;; Rainbow delimiters
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
 ;; Flycheck
-(use-package flycheck)
-(global-flycheck-mode)
+(use-package flycheck
+  :ensure t
+  :init
+  (global-flycheck-mode))
 
 ;; Go
-(use-package go-mode)
+(use-package go-mode
+  :ensure t)
 (defun lsp-go-install-save-hooks ()
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
@@ -140,12 +172,15 @@
 					  (define-key evil-normal-state-map (kbd "<SPC> t r") 'go-run))))
 
 ;; Haskell
-(use-package haskell-mode)
-(use-package lsp-haskell)
+(use-package haskell-mode
+  :ensure t)
+(use-package lsp-haskell
+  :ensure t)
 (add-hook 'haskell-mode-hook #'lsp)
 (add-hook 'haskell-literate-mode-hook #'lsp)
 
-(use-package hindent)
+(use-package hindent
+  :ensure t)
 (add-hook 'haskell-mode-hook
   (function (lambda ()
 	(add-hook 'before-save-hook
@@ -159,10 +194,12 @@
 ;; (add-hook 'cider-mode-hook #'company-mode)
 
 (use-package scala-mode
+  :ensure t
   :interpreter
     ("scala" . scala-mode))
 
-(use-package lsp-metals)
+(use-package lsp-metals
+  :ensure t)
 
 ;; LSP
 (use-package lsp-mode
@@ -182,25 +219,33 @@
 
 ;; LSP UI
 (use-package lsp-ui
+  :ensure t
+  :init
+  (setq lsp-ui-doc-enable nil)
   :hook (lsp-mode . lsp-ui-mode))
-(setq lsp-ui-doc-enable nil)
 
 
 ;; Debugging
-(use-package dap-mode)
-(dap-mode 1)
-(dap-ui-mode 1)
-(dap-tooltip-mode 1)
-(tooltip-mode 1)
-(dap-ui-controls-mode 1)
+(use-package dap-mode
+  :ensure t
+  :init
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (tooltip-mode 1)
+  (dap-ui-controls-mode 1)
+)
 
 (require 'dap-dlv-go)
 
 ;; Other
-(use-package evil-nerd-commenter)
+(use-package evil-nerd-commenter
+  :ensure t)
 
-(use-package smartparens)
-(smartparens-global-mode t)
+(use-package smartparens
+  :ensure t
+  :init
+  (smartparens-global-mode t))
 
 ;; Goggles
 (use-package evil-goggles
@@ -210,50 +255,31 @@
   (evil-goggles-use-diff-faces))
 
 ;; Redo/Undo
-(use-package undo-fu)
+(use-package undo-fu
+  :ensure t)
 (use-package evil
+  :ensure t
   :init
   (setq evil-undo-system 'undo-fu)
   (setq evil-redo-function 'undo-fu-only-redo))
 
 (use-package zoom)
-
-;; (use-package web-mode
-;;   :custom
-;;   (web-mode-markup-indent-offset 2)
-;;   (web-mode-css-indent-offset 2)
-;;   (web-mode-code-indent-offset 2))
-
-;; (add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
-;; (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
-
-;; (use-package add-node-modules-path)
-;; (defun web-mode-init-prettier-hook ()
-;;   (add-node-modules-path))
-
-;; (add-hook 'web-mode-hook 'web-mode-init-prettier-hook)
-;; (add-hook 'web-mode-hook #'lsp)
-
-
 (custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   '(helm-rg helm-ag prettier-js-mode add-node-modules-path web-mode zoom undo-fu evil-goggles smartparens evil-nerd-commenter gotest lsp-ui company lsp-metals scala-mode hindent lsp-haskell haskell-mode go-mode flycheck rainbow-delimiters which-key helm-projectile helm-swoop diff-hl magit projectile doom-modeline evil doom-themes exec-path-from-shell use-package))
- '(zoom-mode t nil (zoom))
+ '(zoom-mode t)
  '(zoom-size '(0.618 . 0.618)))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(evil-goggles-change-face ((t (:inherit diff-removed))))
- '(evil-goggles-delete-face ((t (:inherit diff-removed))))
- '(evil-goggles-paste-face ((t (:inherit diff-added))))
- '(evil-goggles-undo-redo-add-face ((t (:inherit diff-added))))
- '(evil-goggles-undo-redo-change-face ((t (:inherit diff-changed))))
- '(evil-goggles-undo-redo-remove-face ((t (:inherit diff-removed))))
- '(evil-goggles-yank-face ((t (:inherit diff-changed)))))
+(use-package web-mode
+  :custom
+  (web-mode-markup-indent-offset 2)
+  (web-mode-css-indent-offset 2)
+  (web-mode-code-indent-offset 2))
+
+(add-to-list 'auto-mode-alist '("\\.jsx?$" . web-mode))
+(setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'")))
+
+(use-package add-node-modules-path)
+(defun web-mode-init-prettier-hook ()
+  (add-node-modules-path))
+
+(add-hook 'web-mode-hook 'web-mode-init-prettier-hook)
+(add-hook 'web-mode-hook #'lsp)
